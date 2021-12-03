@@ -15,9 +15,9 @@
 enum editorKey
 {
 	ARROW_LEFT = 1000,
-	ARROW_RIGHT,	//1001
-	ARROW_UP,		//1002
-	ARROW_DOWN,		//1003
+	ARROW_RIGHT, //1001
+	ARROW_UP,	 //1002
+	ARROW_DOWN,	 //1003
 	DEL_KEY,
 	HOME_KEY,
 	END_KEY,
@@ -26,7 +26,8 @@ enum editorKey
 };
 
 /*** data ***/
-typedef struct erow {
+typedef struct erow
+{
 	int size;
 	char *chars;
 } erow;
@@ -242,26 +243,36 @@ void editorDrawRows(struct abuf *ab)
 	int y;
 	for (y = 0; y < E.screenrows; y++)
 	{
-		if (y == E.screenrows / 3)
+		if (y >= E.numrows)
 		{
-			char welcome[80];
-			int welcomelen = snprintf(welcome, sizeof(welcome),
-											  "Kilo editor -- version %s", KILO_VERSION);
-			if (welcomelen > E.screencols)
-				welcomelen = E.screencols;
-			int padding = (E.screencols - welcomelen) / 2;
-			if (padding)
+			if (y == E.screenrows / 3)
+			{
+				char welcome[80];
+				int welcomelen = snprintf(welcome, sizeof(welcome),
+												  "Kilo editor -- version %s", KILO_VERSION);
+				if (welcomelen > E.screencols)
+					welcomelen = E.screencols;
+				int padding = (E.screencols - welcomelen) / 2;
+				if (padding)
+				{
+					abAppend(ab, "~", 1);
+					padding--;
+				}
+				while (padding--)
+					abAppend(ab, " ", 1);
+				abAppend(ab, welcome, welcomelen);
+			}
+			else
 			{
 				abAppend(ab, "~", 1);
-				padding--;
 			}
-			while (padding--)
-				abAppend(ab, " ", 1);
-			abAppend(ab, welcome, welcomelen);
 		}
 		else
 		{
-			abAppend(ab, "~", 1);
+			int len = E.row.size;
+			if (len > E.screencols)
+				len = E.screencols;
+			abAppend(ab, E.row.chars, len);
 		}
 		abAppend(ab, "\x1b[K", 3);
 		if (y < E.screenrows - 1)
@@ -320,7 +331,6 @@ void editorMoveCursor(int key)
 		break;
 	}
 }
-
 void editorProcessKeypress()
 {
 	int c = editorReadKey();
@@ -337,7 +347,7 @@ void editorProcessKeypress()
 		break;
 	case END_KEY:
 		E.cx = E.screencols - 1;
-		break; 
+		break;
 
 	case PAGE_UP:
 	case PAGE_DOWN:
@@ -346,7 +356,7 @@ void editorProcessKeypress()
 		while (times--)
 			editorMoveCursor(c == PAGE_UP ? ARROW_UP : ARROW_DOWN);
 	}
-		break;
+	break;
 
 	case ARROW_UP:
 	case ARROW_DOWN:
