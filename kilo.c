@@ -1,4 +1,8 @@
 /*** includes ***/
+#define _DEFAULT_SOURCE
+#define _BSD_SOURCE
+#define _GNU_SOURCE
+
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
@@ -52,13 +56,11 @@ void die(const char *s)
 	perror(s);
 	exit(1);
 }
-
 void disableRawMode()
 {
 	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &E.orig_termios) == -1)
 		die("tcsetattr");
 }
-
 void enableRawMode()
 {
 	if (tcgetattr(STDIN_FILENO, &E.orig_termios) == -1)
@@ -76,7 +78,6 @@ void enableRawMode()
 	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1)
 		die("tcsetattr");
 }
-
 int editorReadKey()
 {
 	int nread;
@@ -157,7 +158,6 @@ int editorReadKey()
 		return c;
 	}
 }
-
 int getCursorPosition(int *rows, int *cols)
 {
 	char buf[32];
@@ -182,7 +182,6 @@ int getCursorPosition(int *rows, int *cols)
 		return -1;
 	return 0;
 }
-
 int getWindowSize(int *rows, int *cols)
 {
 	struct winsize ws;
@@ -258,8 +257,9 @@ void editorDrawRows(struct abuf *ab)
 	{
 		if (y >= E.numrows)
 		{
-			if (y == E.screenrows / 3)
+			if (E.numrows == 0 && y == E.screenrows / 3)
 			{
+
 				char welcome[80];
 				int welcomelen = snprintf(welcome, sizeof(welcome),
 												  "Kilo editor -- version %s", KILO_VERSION);
