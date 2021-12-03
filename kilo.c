@@ -17,6 +17,7 @@ enum editorKey
 	ARROW_RIGHT,	//1001
 	ARROW_UP,		//1002
 	ARROW_DOWN,		//1003
+	DEL_KEY,
 	HOME_KEY,
 	END_KEY,
 	PAGE_UP,
@@ -95,6 +96,8 @@ int editorReadKey()
 					{
 					case '1':
 						return HOME_KEY;
+					case '3':
+						return DEL_KEY;
 					case '4':
 						return END_KEY;
 					case '5':
@@ -308,6 +311,13 @@ void editorProcessKeypress()
 		write(STDOUT_FILENO, "\x1b[H", 3);
 		exit(0);
 		break;
+
+	case HOME_KEY:
+		E.cx = 0;
+		break;
+	case END_KEY:
+		E.cx = E.screencols - 1;
+		break; 
 
 	case PAGE_UP:
 	case PAGE_DOWN:
