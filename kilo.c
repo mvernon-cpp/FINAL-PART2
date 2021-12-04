@@ -512,7 +512,6 @@ void editorFindCallback(char *query, int key)
 		{
 			last_match = current;
 			E.cy = current;
-			E.cy = i;
 			E.cx = editorRowRxToCx(row, match - row->render);
 			E.rowoff = E.numrows;
 			break;
@@ -525,7 +524,8 @@ void editorFind()
 	int saved_cy = E.cy;
 	int saved_coloff = E.coloff;
 	int saved_rowoff = E.rowoff;
-	char *query = editorPrompt("Search: %s (ESC to cancel)", editorFindCallback);
+	char *query = editorPrompt("Search: %s (Use ESC/Arrows/Enter)",
+										editorFindCallback);
 	if (query)
 	{
 		free(query);
