@@ -612,6 +612,7 @@ void editorSetStatusMessage(const char *fmt, ...)
 	va_end(ap);
 	E.statusmsg_time = time(NULL);
 }
+
 /*** input ***/
 char *editorPrompt(char *prompt)
 {
@@ -624,7 +625,12 @@ char *editorPrompt(char *prompt)
 		editorSetStatusMessage(prompt, buf);
 		editorRefreshScreen();
 		int c = editorReadKey();
-		if (c == '\x1b')
+		if (c == DEL_KEY || c == CTRL_KEY('h') || c == BACKSPACE)
+		{
+			if (buflen != 0)
+				buf[--buflen] = '\0';
+		}
+		else if (c == '\x1b')
 		{
 			editorSetStatusMessage("");
 			free(buf);
