@@ -309,6 +309,13 @@ void editorSelectSyntaxHighlight()
 				 (!is_ext && strstr(E.filename, s->filematch[i])))
 			{
 				E.syntax = s;
+
+				int filerow;
+				for (filerow = 0; filerow < E.numrows; filerow++)
+				{
+					editorUpdateSyntax(&E.row[filerow]);
+				}
+
 				return;
 			}
 			i++;
