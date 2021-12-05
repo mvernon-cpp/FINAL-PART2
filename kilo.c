@@ -37,6 +37,7 @@ enum editorKey
 enum editorHighlight
 {
 	HL_NORMAL = 0,
+	HL_STRING,
 	HL_NUMBER,
 	HL_MATCH
 };
@@ -284,6 +285,8 @@ int editorSyntaxToColor(int hl)
 {
 	switch (hl)
 	{
+	case HL_STRING:
+		return 35;
 	case HL_NUMBER:
 		return 31;
 	case HL_MATCH:
@@ -557,7 +560,7 @@ void editorSave()
 
 	int len;
 	char *buf = editorRowsToString(&len);
-	
+
 	int fd = open(E.filename, O_RDWR | O_CREAT, 0644);
 	if (fd != -1)
 	{
