@@ -62,11 +62,13 @@ struct editorSyntax
 };
 typedef struct erow
 {
+	int idx;
 	int size;
 	int rsize;
 	char *chars;
 	char *render;
 	unsigned char *hl;
+	int hl_open_comment;
 } erow;
 
 struct editorConfig
@@ -286,7 +288,7 @@ void editorUpdateSyntax(erow *row)
 
 	int prev_sep = 1;
 	int in_string = 0;
-	int in_comment = 0;
+	int in_comment = (row->idx > 0 && E.row[row->idx - 1].hl_open_comment);
 
 	int i = 0;
 
@@ -400,6 +402,10 @@ void editorUpdateSyntax(erow *row)
 		prev_sep = is_separator(c);
 		i++;
 	}
+	int changed = (row->hl_open_comment != in_comment);
+	row->hl_open_comment = in_comment;
+	if (changed && row->idx + 1 < E.numrows)
+		editorUpdateSyntax(&E.row[row->idx + 1]);
 }
 int editorSyntaxToColor(int hl)
 {
@@ -516,6 +522,8 @@ void editorInsertRow(int at, char *s, size_t len)
 	E.row = realloc(E.row, sizeof(erow) * (E.numrows + 1));
 	memmove(&E.row[at + 1], &E.row[at], sizeof(erow) * (E.numrows - at));
 
+	E.row[at].idx = at;
+
 	E.row[at].size = len;
 	E.row[at].chars = malloc(len + 1);
 	memcpy(E.row[at].chars, s, len);
@@ -524,6 +532,7 @@ void editorInsertRow(int at, char *s, size_t len)
 	E.row[at].rsize = 0;
 	E.row[at].render = NULL;
 	E.row[at].hl = NULL;
+	E.row[at].hl_open_comment = 0;
 	editorUpdateRow(&E.row[at]);
 
 	E.numrows++;
