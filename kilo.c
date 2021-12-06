@@ -21,13 +21,14 @@
 #define KILO_QUIT_TIMES 3
 
 #define CTRL_KEY(k) ((k)&0x1f)
+
 enum editorKey
 {
 	BACKSPACE = 127,
 	ARROW_LEFT = 1000,
-	ARROW_RIGHT, //1001
-	ARROW_UP,	 //1002
-	ARROW_DOWN,	 //1003
+	ARROW_RIGHT,
+	ARROW_UP,
+	ARROW_DOWN,
 	DEL_KEY,
 	HOME_KEY,
 	END_KEY,
@@ -521,6 +522,8 @@ void editorInsertRow(int at, char *s, size_t len)
 		return;
 	E.row = realloc(E.row, sizeof(erow) * (E.numrows + 1));
 	memmove(&E.row[at + 1], &E.row[at], sizeof(erow) * (E.numrows - at));
+	for (int j = at + 1; j <= E.numrows; j++)
+		E.row[j].idx++;
 
 	E.row[at].idx = at;
 
@@ -550,6 +553,8 @@ void editorDelRow(int at)
 		return;
 	editorFreeRow(&E.row[at]);
 	memmove(&E.row[at], &E.row[at + 1], sizeof(erow) * (E.numrows - at - 1));
+	for (int j = at; j < E.numrows - 1; j++)
+		E.row[j].idx--;
 	E.numrows--;
 	E.dirty++;
 }
@@ -665,9 +670,7 @@ void editorOpen(char *filename)
 	char *line = NULL;
 	size_t linecap = 0;
 	ssize_t linelen;
-	linelen = getline(&line, &linecap, fp);
-	if (linelen != -1)
-	{
+	
 		while ((linelen = getline(&line, &linecap, fp)) != -1)
 		{
 
@@ -680,7 +683,7 @@ void editorOpen(char *filename)
 		fclose(fp);
 		E.dirty = 0;
 	}
-}
+
 void editorSave()
 {
 	if (E.filename == NULL)
@@ -811,10 +814,7 @@ struct abuf
 	char *b;
 	int len;
 };
-#define ABUF_INIT \
-	{              \
-		NULL, 0     \
-	}
+#define ABUF_INIT {NULL, 0}
 
 void abAppend(struct abuf *ab, const char *s, int len)
 {
@@ -837,6 +837,11 @@ void editorScroll()
 	if (E.cy < E.numrows)
 	{
 		E.rx = editorRowCxToRx(&E.row[E.cy], E.cx);
+	}
+
+	if (E.cy < E.rowoff)
+	{
+		E.rowoff = E.cy;
 	}
 	if (E.cy >= E.rowoff + E.screenrows)
 	{
@@ -911,16 +916,14 @@ void editorDrawRows(struct abuf *ab)
 				}
 				else if (hl[j] == HL_NORMAL)
 				{
-					if (hl[j] == HL_NORMAL)
+					if (current_color != -1)
 					{
-						if (current_color != -1)
-						{
-							abAppend(ab, "\x1b[39m", 5);
-							current_color = -1;
-						}
-						abAppend(ab, &c[j], 1);
+						abAppend(ab, "\x1b[39m", 5);
+						current_color = -1;
 					}
+					abAppend(ab, &c[j], 1);
 				}
+
 				else
 				{
 					int color = editorSyntaxToColor(hl[j]);
@@ -1223,7 +1226,7 @@ int main(int argc, char *argv[])
 {
 	enableRawMode();
 	initEditor();
-	if (argv >= 2)
+	if (argc >= 2)
 	{
 		editorOpen(argv[1]);
 	}
